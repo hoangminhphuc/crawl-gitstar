@@ -119,10 +119,11 @@ def crawl_commit(owner, repo, release_tag, release_id, page=1):
         token = token_manager.get_token()
         headers = {"Authorization": f"token {token}"}
         
-        params = {"sha": release_tag, "page": page, "per_page": 100}
+        # params = {"sha": release_tag, "page": page, "per_page": 100}
         
         while True:
             try:
+                params = {"sha": release_tag, "page": page, "per_page": 100}
                 # Kiểm tra rate limit trước khi gửi yêu cầu
                 if token_manager.check_rate_limit():
                     token_manager.wait_for_reset()  # Nếu tất cả token chạm rate limit, chờ reset
@@ -140,6 +141,10 @@ def crawl_commit(owner, repo, release_tag, release_id, page=1):
                             save_commit_to_db(cursor, sha_commit, commit_message, release_id)
                         # Nếu còn nhiều commit, crawl tiếp
                         page += 1
+
+                        if len(commits) < 100:
+                            print("Reached final commits page.")
+                            break
                     else:
                         print(f"No more commits for {release_tag} (page {page})")
                         break
